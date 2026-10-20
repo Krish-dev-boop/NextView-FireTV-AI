@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#080b12" />
+  <title>NextView — Personalized Entertainment</title>
+  <style>
+    :root {
+      --bg: #080b12;
+      --panel: #101521;
+      --panel-2: #171e2d;
+      --text: #f6f7fb;
+      --muted: #9ba5b7;
+      --accent: #7c5cff;
+      --accent-2: #29d3c2;
+      --focus: #fff;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; color: var(--text); background: var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh; overflow-x: hidden;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .app-shell { min-height: 100vh; background: radial-gradient(ellipse at 80% 0%, #241c4b 0%, transparent 38%), var(--bg); }
+    .topbar {
+      height: 84px; display: flex; align-items: center; gap: 34px; padding: 0 5vw;
+      position: sticky; top: 0; z-index: 10; background: rgba(8,11,18,.88);
+      backdrop-filter: blur(18px); border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .brand { display: flex; align-items: center; gap: 11px; min-width: max-content; }
+    .brand-mark {
+      width: 37px; height: 37px; border-radius: 12px; display: grid; place-items: center;
+      background: linear-gradient(135deg, var(--accent), #3e9fff); font-weight: 900; font-size: 20px;
+      box-shadow: 0 8px 25px #7c5cff55;
+    }
+    .brand-name { font-weight: 850; letter-spacing: -.7px; font-size: 23px; }
+    .brand-name span { color: var(--accent-2); }
+    nav { display: flex; align-items: center; gap: 8px; }
+    .nav-btn {
+      color: #aab2c3; border: 0; background: transparent; border-radius: 10px;
+      padding: 11px 14px; font-weight: 650; transition: .2s;
+    }
+    .nav-btn:hover, .nav-btn.active { color: white; background: #ffffff12; }
+    .search-wrap { margin-left: auto; position: relative; width: min(290px, 25vw); }
+    .search-wrap span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 18px; }
+    #searchInput {
+      width: 100%; background: #ffffff0b; color: white; border: 1px solid #ffffff18;
+      border-radius: 13px; outline: none; padding: 12px 14px 12px 42px; transition: .2s;
+    }
+    #searchInput:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #7c5cff26; }
+    .avatar { width: 39px; height: 39px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg,#ffb86b,#ff6584); font-weight: 800; }
+    main { width: 100%; max-width: 1600px; margin: auto; padding: 0 5vw 60px; }
+    .hero {
+      position: relative; min-height: 470px; margin: 26px 0 42px; border-radius: 24px; overflow: hidden;
+      display: flex; align-items: center; background: #171a30;
+      isolation: isolate;
+    }
+    .hero-art {
+      position: absolute; inset: 0; z-index: -2; background-size: cover; background-position: center 35%;
+      background-image: linear-gradient(90deg,#080b12 0%,rgba(8,11,18,.93) 28%,rgba(8,11,18,.38) 68%,rgba(8,11,18,.1) 100%),
+        url("https://image.tmdb.org/t/p/original/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg");
+      transform: scale(1.02);
+    }
+    .hero::after { content: ""; position: absolute; inset: auto 0 0; height: 100px; background: linear-gradient(transparent,var(--bg)); z-index: -1; }
+    .hero-content { max-width: 590px; padding: 52px clamp(28px,5vw,76px); }
+    .eyebrow { color: var(--accent-2); font-size: 12px; font-weight: 850; letter-spacing: 2.2px; text-transform: uppercase; }
+    h1 { font-size: clamp(42px,5vw,70px); line-height: .98; letter-spacing: -2.5px; margin: 15px 0 18px; }
+    .hero-copy { color: #c4cada; line-height: 1.65; font-size: 16px; max-width: 490px; }
+    .meta { display: flex; gap: 13px; align-items: center; flex-wrap: wrap; color: #d2d7e2; font-size: 13px; margin: 19px 0 24px; }
+    .rating { color: #ffd166; font-weight: 800; }
+    .pill { padding: 5px 9px; background: #ffffff14; border: 1px solid #ffffff14; border-radius: 6px; }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn { border: 0; padding: 13px 20px; border-radius: 12px; font-weight: 800; transition: transform .18s, background .18s; }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary { color: white; background: linear-gradient(135deg,var(--accent),#5d8bff); box-shadow: 0 8px 24px #7c5cff35; }
+    .btn-secondary { color: white; background: #ffffff16; border: 1px solid #ffffff20; }
+    .section { margin: 34px 0 43px; }
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+    .section-title { margin: 0; font-size: clamp(22px,2.4vw,29px); letter-spacing: -.7px; }
+    .section-subtitle { color: var(--muted); margin: 7px 0 0; font-size: 13px; }
+    .see-all { color: #b4a7ff; background: transparent; border: 0; font-weight: 750; padding: 8px 0 8px 12px; }
+    .card-row { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 18px; }
+    .movie-card {
+      min-width: 0; position: relative; border-radius: 15px; overflow: hidden; background: var(--panel);
+      border: 1px solid #ffffff0d; transition: transform .22s, border-color .22s, box-shadow .22s;
+      outline: none; cursor: pointer;
+    }
+    .movie-card:hover, .movie-card:focus-visible {
+      transform: translateY(-6px) scale(1.015); border-color: #9c8affaa;
+      box-shadow: 0 16px 35px #0008, 0 0 0 2px #7c5cff55;
+    }
+    .poster { width: 100%; aspect-ratio: 2/2.85; display: block; object-fit: cover; background: #202638; }
+    .poster-fallback { aspect-ratio: 2/2.85; display: grid; place-items: center; padding: 20px; text-align: center; background: linear-gradient(145deg,#25234b,#122e3b); font-size: 22px; font-weight: 850; }
+    .card-info { padding: 13px 13px 15px; }
+    .card-title { margin: 0; font-size: 15px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-meta { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 12px; margin-top: 9px; }
+    .card-rating { color: #ffd166; font-weight: 800; }
+    .genre-strip { display: flex; gap: 10px; flex-wrap: wrap; margin: 26px 0 34px; }
+    .genre-chip { color: #dce1ed; border: 1px solid #ffffff18; background: #ffffff08; padding: 10px 17px; border-radius: 999px; font-weight: 700; }
+    .genre-chip:hover, .genre-chip.selected { color: white; background: #7c5cff35; border-color: #8c76ff; }
+    .personal-card {
+      padding: 26px; border-radius: 20px; background: linear-gradient(110deg,#171a32,#10232a);
+      border: 1px solid #ffffff12; display: flex; justify-content: space-between; align-items: center; gap: 25px;
+    }
+    .personal-card h3 { font-size: 23px; margin: 0 0 8px; }
+    .personal-card p { color: #aeb9ca; margin: 0; line-height: 1.55; }
+    .personal-icon { flex: 0 0 auto; width: 60px; height: 60px; display: grid; place-items: center; font-size: 28px; border-radius: 18px; background: #7c5cff26; }
+    .interest-panel { display: none; margin-top: 18px; padding: 22px; border-radius: 16px; background: var(--panel); border: 1px solid #ffffff12; }
+    .interest-panel.open { display: block; }
+    .interest-options { display: flex; flex-wrap: wrap; gap: 9px; margin: 15px 0; }
+    .interest-check { display: inline-flex; gap: 8px; align-items: center; padding: 9px 12px; border-radius: 9px; background: #ffffff08; border: 1px solid #ffffff16; color: #d7dceb; }
+    .interest-check input { accent-color: var(--accent); }
+    .empty-state { padding: 48px 20px; text-align: center; border: 1px dashed #ffffff2b; border-radius: 16px; color: var(--muted); }
+    footer { border-top: 1px solid #ffffff10; padding: 26px 5vw 34px; color: #788397; font-size: 12px; text-align: center; }
+    .toast { position: fixed; bottom: 25px; left: 50%; transform: translate(-50%,20px); opacity: 0; pointer-events: none; background: #f7f8ff; color: #10121b; border-radius: 12px; padding: 13px 18px; z-index: 30; font-weight: 750; box-shadow: 0 10px 30px #0008; transition: .25s; }
+    .toast.show { opacity: 1; transform: translate(-50%,0); }
+    .modal-backdrop { position: fixed; inset: 0; background: #02040bd9; z-index: 20; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal-backdrop.open { display: flex; }
+    .modal { width: min(760px,100%); background: #111725; border: 1px solid #ffffff20; border-radius: 20px; overflow: hidden; display: grid; grid-template-columns: 250px 1fr; box-shadow: 0 25px 80px #000b; }
+    .modal img { width: 100%; height: 100%; min-height: 350px; object-fit: cover; background: #202638; }
+    .modal-content { padding: 28px; }
+    .modal-content h2 { font-size: 30px; margin: 10px 0; }
+    .modal-content p { color: #b9c2d2; line-height: 1.65; }
+    .modal-close { float: right; color: white; background: #ffffff12; border: 0; border-radius: 8px; padding: 7px 11px; }
+    .loading { color: var(--muted); padding: 20px 0; }
+    @media (min-width: 1500px) { .card-row { gap: 22px; } .hero { min-height: 530px; } }
+    @media (max-width: 1000px) { .topbar { gap: 15px; padding: 0 3vw; } nav { gap: 0; } .nav-btn { padding: 10px; } main { padding-left: 3vw; padding-right: 3vw; } .card-row { grid-template-columns: repeat(4,minmax(0,1fr)); } .hero { min-height: 420px; } }
+    @media (max-width: 700px) {
+      .topbar { height: auto; min-height: 76px; padding: 15px 5vw; flex-wrap: wrap; gap: 12px; }
+      nav { order: 3; width: 100%; overflow-x: auto; }
+      .search-wrap { width: min(240px,calc(100% - 180px)); }
+      .avatar { margin-left: auto; }
+      main { padding: 0 5vw 40px; }
+      .hero { min-height: 490px; margin-top: 18px; align-items: end; }
+      .hero-art { background-position: 60% center; background-image: linear-gradient(0deg,#080b12 0%,rgba(8,11,18,.88) 42%,rgba(8,11,18,.1) 100%), url("https://image.tmdb.org/t/p/original/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg"); }
+      .hero-content { padding: 30px 24px 36px; }
+      h1 { font-size: 46px; }
+      .card-row { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 13px; }
+      .personal-card { align-items: start; padding: 20px; }
+      .personal-icon { display: none; }
+      .modal { grid-template-columns: 115px 1fr; }
+      .modal img { min-height: 250px; }
+      .modal-content { padding: 18px; }
+      .modal-content h2 { font-size: 22px; }
+    }
+    /* Larger focus targets and clear focus rings help remote-control navigation on Fire TV. */
+    @media (min-width: 1001px) {
+      button, .movie-card, input { scroll-margin-top: 110px; }
+      button:focus-visible, input:focus-visible, .movie-card:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand" aria-label="NextView home">
+      <div class="brand-mark">N</div>
+      <div class="brand-name">Next<span>View</span></div>
+    </div>
+    <nav aria-label="Main navigation">
+      <button class="nav-btn active" data-nav="Home">Home</button>
+      <button class="nav-btn" data-nav="Movies">Movies</button>
+      <button class="nav-btn" data-nav="Series">Series</button>
+      <button class="nav-btn" data-nav="Anime">Anime</button>
+    </nav>
+    <div class="search-wrap"><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="Search titles, genres..." aria-label="Search movies and shows" /></div>
+    <div class="avatar" title="Demo profile">K</div>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="heroTitle">
+      <div class="hero-art"></div>
+      <div class="hero-content">
+        <div class="eyebrow">✦ Your next obsession starts here</div>
+        <h1 id="heroTitle">Stories beyond<br>the ordinary.</h1>
+        <p class="hero-copy">A universe of movies and series, picked around what you love. Spend less time searching and more time watching.</p>
+        <div class="meta"><span class="rating">★ 8.4</span><span>2025</span><span class="pill">SCI-FI</span><span class="pill">ACTION</span><span>2h 08m</span></div>
+        <div class="actions">
+          <button class="btn btn-primary" id="heroPlay">▶ &nbsp; Explore title</button>
+          <button class="btn btn-secondary" id="heroInfo">ⓘ &nbsp; More info</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="discoverSection">
+      <div class="section-head">
+        <div><h2 class="section-title" id="discoverTitle">Picked for you</h2><p class="section-subtitle" id="discoverSubtitle">Your taste, translated into tonight's watchlist.</p></div>
+        <button class="see-all" id="refreshRecommendations">Refresh picks ↗</button>
+      </div>
+      <div class="card-row" id="recommendedRow"><div class="loading">Finding your next favorite…</div></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><div><h2 class="section-title">Explore by mood</h2><p class="section-subtitle">Choose a genre and let the browsing begin.</p></div></div>
+      <div class="genre-strip" id="genreStrip">
+        <button class="genre-chip selected" data-genre="All">✦ All</button>
+        <button class="genre-chip" data-genre="Action">⚡ Action</button>
+        <button class="genre-chip" data-genre="Sci-Fi">◎ Sci-Fi</button>
+        <button class="genre-chip" data-genre="Comedy">☻ Comedy</button>
+        <button class="genre-chip" data-genre="Anime">✿ Anime</button>
+        <button class="genre-chip" data-genre="Trending">↗ Trending</button>
+        <button class="genre-chip" data-genre="Romance">♡ Romance</button>
+      </div>
+      <div class="card-row" id="categoryRow"></div>
+    </section>
+
+    <section class="section">
+      <div class="personal-card">
+        <div><h3>Make NextView feel more like you.</h3><p>Choose your favorite genres. Our demo recommendation engine will tune your picks using these interests and your watch history.</p></div>
+        <div class="personal-icon">✧</div>
+        <button class="btn btn-secondary" id="preferencesToggle">Tune my taste</button>
+      </div>
+      <div class="interest-panel" id="interestPanel">
+        <strong>Your favorite genres</strong>
+        <div class="interest-options" id="interestOptions">
+          <label class="interest-check"><input type="checkbox" value="Action"> Action</label>
+          <label class="interest-check"><input type="checkbox" value="Sci-Fi" checked> Sci-Fi</label>
+          <label class="interest-check"><input type="checkbox" value="Comedy"> Comedy</label>
+          <label class="interest-check"><input type="checkbox" value="Anime" checked> Anime</label>
+          <label class="interest-check"><input type="checkbox" value="Romance"> Romance</label>
+          <label class="interest-check"><input type="checkbox" value="Drama"> Drama</label>
+          <label class="interest-check"><input type="checkbox" value="Thriller"> Thriller</label>
+        </div>
+        <button class="btn btn-primary" id="savePreferences">Update recommendations</button>
+      </div>
+    </section>
+    <section class="section">
+      <div class="section-head"><div><h2 class="section-title">Trending now</h2><p class="section-subtitle">The titles everyone's talking about.</p></div></div>
+      <div class="card-row" id="trendingRow"></div>
+    </section>
+    <div id="searchResults" class="section" hidden>
+      <div class="section-head"><div><h2 class="section-title">Search results</h2><p class="section-subtitle" id="searchCount"></p></div></div>
+      <div class="card-row" id="searchRow"></div>
+    </div>
+  </main>
+  <footer>NextView · The future of personalized entertainment. <br>Demo experience. Movie data and poster images are sample content.</footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <img id="modalPoster" alt="" />
+    <div class="modal-content">
+      <button class="modal-close" id="modalClose" aria-label="Close details">✕</button>
+      <div class="eyebrow" id="modalType">NEXTVIEW PICK</div>
+      <h2 id="modalTitle">Title</h2>
+      <div class="meta" id="modalMeta"></div>
+      <p id="modalDescription"></p>
+      <button class="btn btn-primary" id="watchlistBtn">＋ Add to watchlist</button>
+    </div>
+  </div>
+</div>
+<script>
+  // Frontend-first demo: uses the Express API when available and falls back to local sample data.
+  const sampleMovies = [
+    {id:1,title:"Orbit Nine",year:2025,rating:8.4,runtime:"2h 08m",genres:["Sci-Fi","Action"],type:"Movie",trending:true,description:"A rescue pilot follows a signal from beyond a dying star.",image:"https://image.tmdb.org/t/p/w500/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg"},
+    {id:2,title:"Neon Ronin",year:2024,rating:8.1,runtime:"1h 52m",genres:["Anime","Action"],type:"Movie",trending:true,description:"A wandering swordsman protects a city powered by forgotten memories.",image:"https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg"},
+    {id:3,title:"The Last Laugh",year:2025,rating:7.8,runtime:"1h 44m",genres:["Comedy"],type:"Movie",trending:true,description:"A painfully honest comic accidentally becomes the voice of a generation.",image:"https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg"},
+    {id:4,title:"Deep Blue",year:2023,rating:8.7,runtime:"6 Episodes",genres:["Sci-Fi","Drama"],type:"Series",trending:false,description:"A research crew discovers a strange ecosystem beneath Europa's ice.",image:"https://image.tmdb.org/t/p/w500/5YZbUm69a6ve8Ct6bOGjtF9W8l.jpg"},
+    {id:5,title:"Paper Moons",year:2024,rating:8.3,runtime:"10 Episodes",genres:["Anime","Romance"],type:"Series",trending:false,description:"Two quiet classmates find courage in the notes they leave each other.",image:"https://image.tmdb.org/t/p/w500/9Gtg2DzBhmYamXBS1hKAhiwbBKS.jpg"},
+    {id:6,title:"Wild Circuit",year:2025,rating:7.9,runtime:"1h 58m",genres:["Action","Thriller"],type:"Movie",trending:true,description:"A courier has one night to outrun a city-wide surveillance grid.",image:"https://image.tmdb.org/t/p/w500/4HodYYKEIsGOdinkGi2Ucz6X9i0.jpg"},
+    {id:7,title:"Kitchen Chaos",year:2022,rating:7.6,runtime:"8 Episodes",genres:["Comedy","Drama"],type:"Series",trending:false,description:"An ambitious chef turns a tiny family restaurant into a neighborhood legend.",image:"https://image.tmdb.org/t/p/w500/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg"},
+    {id:8,title:"Starfall Academy",year:2025,rating:8.5,runtime:"12 Episodes",genres:["Anime","Sci-Fi"],type:"Series",trending:true,description:"Cadets train to navigate the living constellations that protect their galaxy.",image:"https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg"}
+  ];
+  let movies = [...sampleMovies];
+  let interests = ["Sci-Fi","Anime"];
+  let watchHistory = [];
+  let activeGenre = "All";
+  let activeNav = "Home";
+  const $ = (id) => document.getElementById(id);
+
+  async function apiGet(url) {
+    try { const response = await fetch(url); if (!response.ok) throw new Error("API unavailable"); return await response.json(); }
+    catch (_) { return null; }
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+  }
+
+  function makeCard(movie) {
+    const card = document.createElement("article");
+    card.className = "movie-card"; card.tabIndex = 0; card.setAttribute("role","button");
+    card.setAttribute("aria-label", `${movie.title}, rating ${movie.rating}`);
+    const image = document.createElement("img");
+    image.className = "poster"; image.alt = `${movie.title} poster`; image.loading = "lazy"; image.src = movie.image || "";
+    image.onerror = () => { const fallback = document.createElement("div"); fallback.className = "poster-fallback"; fallback.textContent = movie.title; image.replaceWith(fallback); };
+    const info = document.createElement("div"); info.className = "card-info";
+    info.innerHTML = `<h3 class="card-title">${escapeHtml(movie.title)}</h3><div class="card-meta"><span>${escapeHtml(movie.year)} · ${escapeHtml(movie.type)}</span><span class="card-rating">★ ${Number(movie.rating).toFixed(1)}</span></div>`;
+    card.append(image,info);
+    card.addEventListener("click", () => openDetails(movie));
+    card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDetails(movie); } });
+    return card;
+  }
+
+  function renderRow(containerId, list, emptyText = "No titles found.") {
+    const container = $(containerId); container.replaceChildren();
+    if (!list.length) { const empty = document.createElement("div"); empty.className = "empty-state"; empty.textContent = emptyText; container.append(empty); return; }
+    list.forEach(movie => container.append(makeCard(movie)));
+  }
+
+  // Explainable recommendation scoring: favorite genres, quality, trending status and recent viewing.
+  function getRecommendations() {
+    return movies.map(movie => {
+      const genreScore = movie.genres.reduce((sum, genre) => sum + (interests.includes(genre) ? 3 : 0), 0);
+      const qualityScore = Number(movie.rating || 0) / 2;
+      const trendScore = movie.trending ? 0.7 : 0;
+      const historyScore = watchHistory.includes(movie.id) ? -4 : 0;
+      return { ...movie, score: genreScore + qualityScore + trendScore + historyScore };
+    }).sort((a,b) => b.score - a.score);
+  }
+
+  function renderCategories() {
+    let list = [...movies];
+    if (activeNav === "Movies") list = list.filter(m => m.type === "Movie");
+    if (activeNav === "Series") list = list.filter(m => m.type === "Series");
+    if (activeNav === "Anime") list = list.filter(m => m.genres.includes("Anime"));
+    if (activeGenre === "Trending") list = list.filter(m => m.trending);
+    else if (activeGenre !== "All") list = list.filter(m => m.genres.includes(activeGenre));
+    renderRow("categoryRow", list);
+  }
+
+  function renderAll() {
+    renderRow("recommendedRow", getRecommendations().slice(0,5));
+    renderCategories();
+    renderRow("trendingRow", movies.filter(m => m.trending).slice(0,5));
+  }
+
+  function openDetails(movie) {
+    $("modalPoster").src = movie.image || "";
+    $("modalPoster").alt = `${movie.title} poster`;
+    $("modalPoster").onerror = () => { $("modalPoster").style.visibility = "hidden"; };
+    $("modalPoster").onload = () => { $("modalPoster").style.visibility = "visible"; };
+    $("modalType").textContent = `${movie.type} · NEXTVIEW PICK`;
+    $("modalTitle").textContent = movie.title;
+    $("modalMeta").innerHTML = `<span class="rating">★ ${Number(movie.rating).toFixed(1)}</span><span>${escapeHtml(movie.year)}</span><span>${escapeHtml(movie.runtime)}</span>`;
+    $("modalDescription").textContent = movie.description;
+    $("watchlistBtn").dataset.movieId = movie.id;
+    $("modalBackdrop").classList.add("open");
+    $("modalClose").focus();
+  }
+  function closeDetails() { $("modalBackdrop").classList.remove("open"); }
+  function toast(message) {
+    $("toast").textContent = message; $("toast").classList.add("show");
+    clearTimeout(toast.timer); toast.timer = setTimeout(() => $("toast").classList.remove("show"), 2400);
+  }
+
+  async function init() {
+    const data = await apiGet("/api/movies");
+    if (Array.isArray(data) && data.length) movies = data;
+    renderAll();
+  }
+
+  $("heroPlay").addEventListener("click", () => {
+    const featured = movies.find(m => m.id === 1) || movies[0];
+    if (featured) { watchHistory.push(featured.id); openDetails(featured); }
+  });
+  $("heroInfo").addEventListener("click", () => openDetails(movies.find(m => m.id === 1) || movies[0]));
+  $("refreshRecommendations").addEventListener("click", () => {
+    renderRow("recommendedRow", getRecommendations().slice(0,5));
+    toast("Your picks have been refreshed ✦");
+  });
+  $("genreStrip").addEventListener("click", e => {
+    const button = e.target.closest("[data-genre]"); if (!button) return;
+    activeGenre = button.dataset.genre;
+    document.querySelectorAll(".genre-chip").forEach(chip => chip.classList.toggle("selected", chip === button));
+    renderCategories();
+  });
+  document.querySelectorAll("[data-nav]").forEach(button => button.addEventListener("click", () => {
+    activeNav = button.dataset.nav;
+    document.querySelectorAll(".nav-btn").forEach(nav => nav.classList.toggle("active", nav === button));
+    $("discoverTitle").textContent = activeNav === "Home" ? "Picked for you" : `Explore ${activeNav}`;
+    renderCategories();
+    if (activeNav !== "Home") $("discoverSection").scrollIntoView({behavior:"smooth",block:"start"});
+  }));
+  $("searchInput").addEventListener("input", e => {
+    const query = e.target.value.trim().toLowerCase();
+    if (!query) { $("searchResults").hidden = true; return; }
+    const found = movies.filter(m => `${m.title} ${m.genres.join(" ")} ${m.type} ${m.description}`.toLowerCase().includes(query));
+    $("searchResults").hidden = false;
+    $("searchCount").textContent = `${found.length} title${found.length === 1 ? "" : "s"} matching “${query}”`;
+    renderRow("searchRow", found, "No matches yet. Try a different title or genre.");
+  });
+  $("preferencesToggle").addEventListener("click", () => $("interestPanel").classList.toggle("open"));
+  $("savePreferences").addEventListener("click", async () => {
+    interests = [...document.querySelectorAll("#interestOptions input:checked")].map(input => input.value);
+    // The backend can personalize results when the API is running; local scoring remains available offline.
+    const apiResults = await fetch("/api/recommendations", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ interests, history:watchHistory })
+    }).then(r => r.ok ? r.json() : null).catch(() => null);
+    if (Array.isArray(apiResults) && apiResults.length) renderRow("recommendedRow", apiResults.slice(0,5));
+    else renderRow("recommendedRow", getRecommendations().slice(0,5));
+    toast("Taste updated. Recommendations refreshed ✦");
+    $("interestPanel").classList.remove("open");
+  });
+  $("watchlistBtn").addEventListener("click", () => {
+    const id = Number($("watchlistBtn").dataset.movieId);
+    if (id && !watchHistory.includes(id)) watchHistory.push(id);
+    closeDetails(); renderRow("recommendedRow", getRecommendations().slice(0,5));
+    toast("Added to your demo watch history ✓");
+  });
+  $("modalClose").addEventListener("click", closeDetails);
+  $("modalBackdrop").addEventListener("click", e => { if (e.target === $("modalBackdrop")) closeDetails(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeDetails(); });
+  init();
+</script>
+</body>
+</html>
